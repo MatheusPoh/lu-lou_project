@@ -11,7 +11,7 @@ async function init() {
     <section><small class="muted">${escapeHtml(product.category.name)}</small><h1>${escapeHtml(product.name)}</h1>
       <p>${escapeHtml(product.description)}</p><p class="price">${money(product.price)}</p><strong>Escolha o tamanho:</strong>
       <div class="sizes">${product.sizes.length ? product.sizes.map((item) => `<button class="size" data-size="${escapeHtml(item.size)}" ${item.stock === 0 ? 'disabled title="Sem estoque"' : ''}>${escapeHtml(item.size)}</button>`).join('') : '<span class="muted">Nenhum tamanho cadastrado.</span>'}</div>
-      <p id="feedback" class="message error hidden"></p><button id="buy" class="button" disabled>Comprar pelo WhatsApp</button>
+      <p id="feedback" class="message hidden"></p><div class="product-actions"><button id="buy" class="button" disabled>Adicionar ao carrinho</button><a class="button secondary" href="/carrinho.html">Ver carrinho</a></div>
     </section>`;
   const buyButton = document.querySelector('#buy');
   detail.querySelectorAll('.size:not(:disabled)').forEach((button) => button.addEventListener('click', () => {
@@ -20,9 +20,9 @@ async function init() {
   }));
   buyButton.addEventListener('click', () => {
     if (!selectedSize) return;
-    if (!config.whatsappNumber) return showMessage(document.querySelector('#feedback'), 'WhatsApp da loja ainda não foi configurado.', true);
-    const message = `Olá! Tenho interesse no produto ${product.name}, tamanho ${selectedSize}, no valor de ${money(product.price)}.`;
-    window.open(`https://wa.me/${config.whatsappNumber}?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
+    const selected = product.sizes.find((item) => item.size === selectedSize);
+    cart.add(product.id, selectedSize, selected.stock);
+    showMessage(document.querySelector('#feedback'), `${product.name}, tamanho ${selectedSize}, foi adicionado ao carrinho.`);
   });
 }
 init().catch((error) => { detail.innerHTML = `<p class="message error">${escapeHtml(error.message)}</p>`; });
